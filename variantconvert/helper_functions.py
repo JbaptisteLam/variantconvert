@@ -38,7 +38,14 @@ class HelperFunctions:
             "get_alt_from_canoes_bed": self.get_alt_from_canoes_bed,
             "get_ref_from_tsv_vcf": self.get_ref_from_tsv,
             "get_alt_from_tsv_vcf": self.get_alt_from_tsv,
+            "get_gt_from_zygosyty": self.get_gt_from_zygosyty,
         }
+
+    def get_gt_from_zygosyty(HomHet):
+        if HomHet == "Het":
+            return "0/1"
+        else:
+            return "1/1"
 
     def get_ref_from_tsv(self, chr, start, ref):
         f = get_genome(self.config["GENOME"]["path"])
