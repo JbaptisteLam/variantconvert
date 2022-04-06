@@ -36,7 +36,27 @@ class HelperFunctions:
             "get_info_from_annotsv": self.get_info_from_annotsv,
             "get_ref_from_canoes_bed": self.get_ref_from_canoes_bed,
             "get_alt_from_canoes_bed": self.get_alt_from_canoes_bed,
+            "get_ref_from_tsv_vcf": self.get_ref_from_tsv,
+            "get_alt_from_tsv_vcf": self.get_alt_from_tsv,
         }
+
+    def get_ref_from_tsv(self, chr, start, ref):
+        f = get_genome(self.config["GENOME"]["path"])
+        if len(start) != 1:
+            return f["chr" + str(chr)][int(start) - 1] + ref
+        elif start == "-":
+            return f["chr" + str(chr)][int(start)]
+        else:
+            return ref
+
+    def get_alt_from_tsv(self, chr, start, alt):
+        f = get_genome(self.config["GENOME"]["path"])
+        if len(start) != 1:
+            return f["chr" + str(chr)][int(start)] + alt
+        elif start == "-":
+            return f["chr" + str(chr)][int(start)]
+        else:
+            return alt
 
     def get(self, func_name):
         return self.dispatcher[func_name]
