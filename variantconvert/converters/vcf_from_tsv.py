@@ -139,8 +139,7 @@ class VcfFromTsv(AbstractConverter):
                         if key == "GT" and val == "":
                             sample_field.append("0/1")
                             continue
-                        sample_field.append(data[val][index])
-                    line += ":".join(sample_field)
+                    line += data[val][i]
 
                 # multisample input
                 else:
