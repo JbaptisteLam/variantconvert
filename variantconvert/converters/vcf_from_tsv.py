@@ -11,7 +11,7 @@ import sys
 from converters.abstract_converter import AbstractConverter
 
 sys.path.append("..")
-from commons import create_vcf_header, is_helper_func, clean_string
+from commons import create_vcf_header, is_helper_func, clean_string, clean_values
 from helper_functions import HelperFunctions
 
 
@@ -23,10 +23,25 @@ class VcfFromTsv(AbstractConverter):
             sep="\t",
             low_memory=False,
         )
-        self.df.sort_values(
-            [self.config["VCF_COLUMNS"]["#CHROM"], self.config["VCF_COLUMNS"]["POS"]],
-            inplace=True,
-        )
+        # JB
+        if self.config["GENERAL"]["discard_rows"]:
+            self._adjust_df(
+                self.config["GENERAL"]["discard_rows"]["col"],
+                self.config["GENERAL"]["discard_rows"]["values"],
+            )
+
+        # self.df.sort_values(
+        #    [self.config["VCF_COLUMNS"]["#CHROM"], self.config["VCF_COLUMNS"]["POS"]],
+        #    inplace=True,
+        # )
+        # Correct chr JB
+        if not self.df[self.config["VCF_COLUMNS"]["#CHROM"]].str.contains("chr").any():
+            self.df[self.config["VCF_COLUMNS"]["#CHROM"]] = (
+                "chr" + self.df[self.config["VCF_COLUMNS"]["#CHROM"]]
+            )
+        colindex = self.config["VCF_COLUMNS"]["#CHROM"]
+
+        self.df.rename_axis("#CHROM").reset_index(inplace=True)
         self.df.reset_index(drop=True, inplace=True)
         self.df.fillna(".", inplace=True)
         log.debug(self.df)
@@ -38,6 +53,12 @@ class VcfFromTsv(AbstractConverter):
                 lambda row: self._bwamem_name_bugfix(row), axis=1
             )
         log.debug(self.df)
+
+    def _adjust_df(self, columns, values):
+        """
+        keep only relevant rows
+        """
+        self.df = self.df.loc[self.df[columns] != values]
 
     def _get_sample_list(self):
         # is the file multisample?
@@ -138,9 +159,15 @@ class VcfFromTsv(AbstractConverter):
                     for key, val in self.config["VCF_COLUMNS"]["FORMAT"].items():
                         if key == "GT" and val == "":
                             sample_field.append("0/1")
-                            continue
-                    line += data[val][i]
-
+                        if is_helper_func(val):
+                            func = helper.get(val[1])
+                            args = [data[c][i] for c in val[2:]]
+                            s = func(*args)
+                        else:
+                            s = data[val][i]
+                        s = clean_values(s)
+                        sample_field.append(clean_string(s))
+                    line += ":".join(sample_field)
                 # multisample input
                 else:
                     sample_field_dic = {}
