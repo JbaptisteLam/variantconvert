@@ -78,17 +78,33 @@ def clean_string(s):
     from making the replace dict into a one line mess
     """
     # fmt: off
-    replace = {
-        ";": ",",
-        "“": '"',
-        "”": '"',
-        "‘": "'",
-        "’": "'"
-    }
+    replace = {";": ",", "“": '"', "”": '"', "‘": "'", "’": "'"}
     # fmt: on
     for k, v in replace.items():
         s = s.replace(k, v)
     return s
+
+
+# JB
+def isfloat(num):
+    try:
+        float(num)
+        return True
+    except ValueError:
+        return False
+
+
+# JB sam tu vas m'insulter fort pour le merge
+def clean_values(values):
+    """
+    JB
+    regarding IGV errors, sample field values  > 1 can't have decimal values for examples 150.45 even if the header is discarded
+    so if values are sup or equal to 1 remove decimal part
+    """
+    if isfloat(values):
+        if "." in values and float(values) > 1.0:
+            values = values.split(".")[0]
+    return values
 
 
 def create_vcf_header(input_path, config, sample_list):
