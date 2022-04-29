@@ -1,15 +1,19 @@
 {
 	"GENERAL": {
-		"origin": "Decon",
+		"origin": "tsv",
 		"skip_rows": 0,
 		"comment": "",
 		"unique_variant_id": [
 			"VariantID"
-		]
+		],
+		"discard_rows": {
+			"col": "HomHet",
+			"values" : "wt"
+		}
 	},
 	"GENOME": {
 		"assembly": "hg19",
-		"path": "C:\\Users\\Ichtyornis\\Projects\\variantconvert_project\\hg19.fa",
+		"path": "/home1/data/STARK/databases/genomes/current/hg19.fa",
 		"vcf_header": [
 			"##contig=<ID=chr1,length=249250621,assembly=hg19>",
 			"##contig=<ID=chr2,length=243199373,assembly=hg19>",
@@ -40,21 +44,29 @@
 		]
 	},
 	"VCF_COLUMNS": {
-		"#CHROM": "Chromosome",
-		"POS": "Start",
+		"#CHROM": "Chr",
+		"POS": [
+			"HELPER_FUNCTION",
+			"get_pos",
+			"Start",
+			"Ref",
+			"Mut"
+		],
 		"ID": "rsID",
 		"REF": [
 			"HELPER_FUNCTION",
 			"get_ref_from_tsv",
 			"Chr",
 			"Start",
-			"Ref"
+			"Ref",
+			"Mut"
 		],
 		"ALT": [
 			"HELPER_FUNCTION",
 			"get_alt_from_tsv",
 			"Chr",
 			"Start",
+			"Ref",
 			"Mut"
 		],
 		"QUAL": "",
@@ -62,8 +74,6 @@
 		"INFO": {
 			"Gene": "Gene",
 			"TranscriptID": "TranscriptID",
-			"Depth": "Coverage",
-			"AlleleReadDepth": "ReadWithVar",
 			"Vartype": "VarType",
 			"CodingEffect": "CodingEffect",
 			"VarLocation": "VarLocation",
@@ -74,12 +84,17 @@
 			"VaRank_VarScore": "VaRank_VarScore"
 		},
 		"FORMAT": {
-			"GT": [
-			"HELPER_FUNCTION",
-			"get_gt_from_zygosyty",
-			"HomHet"
+			"GT": "Genotype",
+			"AD": "ReadWithVar",
+			"DP": "Coverage",
+			"VAF": [
+				"HELPER_FUNCTION",
+				"calc_vaf",
+				"ReadWithVar",
+				"Coverage"
+				]
 		},
-		"SAMPLE": "TODO"
+		"SAMPLE": "Sample_Name"
 	},
 	"COLUMNS_DESCRIPTION": {
 		"INFO": {
@@ -90,14 +105,6 @@
 			"TranscriptID": {
 				"Type": "String",
 				"Description": "Name of correspondig transcript"
-			},
-			"Depth": {
-				"Type": "Integer",
-				"Description": "Depth of variant"
-			},
-			"AlleleReadDepth": {
-				"Type": "Integer",
-				"Description": "Count of reads supporting variant"
 			},
 			"Vartype": {
 				"Type": "String",
@@ -130,12 +137,25 @@
 			"VaRank_VarScore": {
 				"Type": "Integer",
 				"Description": "Pathogenicity score established by VaRank, higher score are expected to be more pathogenic"
-			},
+			}
+		},
 		"FORMAT": {
 			"GT": {
 				"Type": "String",
 				"Description": "Genotype"
 			},
+			"DP": {
+				"Type": "Integer",
+				"Description": "Total read depth"
+			},
+			"AD": {
+				"Type": "Integer",
+				"Description": "Count of reads supporting variant"
+			},
+			"VAF": {
+				"Type": "Float",
+				"Description": "Variant Allele Frequency AD divided by DP"
+			}
 		}
 	}
 }
