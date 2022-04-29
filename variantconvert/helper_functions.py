@@ -36,32 +36,54 @@ class HelperFunctions:
             "get_info_from_annotsv": self.get_info_from_annotsv,
             "get_ref_from_canoes_bed": self.get_ref_from_canoes_bed,
             "get_alt_from_canoes_bed": self.get_alt_from_canoes_bed,
-            "get_ref_from_tsv_vcf": self.get_ref_from_tsv,
-            "get_alt_from_tsv_vcf": self.get_alt_from_tsv,
-            "get_gt_from_zygosyty": self.get_gt_from_zygosyty,
+            "get_ref_from_tsv": self.get_ref_from_tsv,
+            "get_alt_from_tsv": self.get_alt_from_tsv,
+            "get_gt_from_zygosity": self.get_gt_from_zygosity,
+            "get_pos": self.get_pos,
+            "calc_vaf": self.calc_vaf,
         }
 
-    def get_gt_from_zygosyty(HomHet):
+    def calc_vaf(self, alleledepth, depth):
+        return str(float(alleledepth) / float(depth))
+
+    def get_pos(self, start, ref, alt):
+        if ref == "-":
+            return start
+        elif alt == "-":
+            return str(int(start) - 1)
+        else:
+            return start
+
+    def get_gt_from_zygosity(HomHet):
         if HomHet == "Het":
             return "0/1"
         else:
             return "1/1"
 
-    def get_ref_from_tsv(self, chr, start, ref):
+    def get_ref_from_tsv(self, chr, start, ref, alt):
         f = get_genome(self.config["GENOME"]["path"])
-        if len(start) != 1:
-            return f["chr" + str(chr)][int(start) - 1] + ref
-        elif start == "-":
-            return f["chr" + str(chr)][int(start)]
+        # Del
+        if len(ref) > 1:
+            return (f[str(chr)][int(start) - 2] + ref).upper()
+        # INS
+        elif ref == "-":
+            return f[str(chr)][int(start) - 1].upper()
+        # DEL one base doesn't care
+        elif len(ref) == 1 and len(alt) == 1 and alt == "-":
+            return (f[str(chr)][int(start) - 2] + ref).upper()
+        # SNV
         else:
-            return ref
+            return ref.upper()
 
-    def get_alt_from_tsv(self, chr, start, alt):
+    def get_alt_from_tsv(self, chr, start, ref, alt):
         f = get_genome(self.config["GENOME"]["path"])
-        if len(start) != 1:
-            return f["chr" + str(chr)][int(start)] + alt
-        elif start == "-":
-            return f["chr" + str(chr)][int(start)]
+        # INS
+        if len(alt) > 1:
+            return (f[str(chr)][int(start) - 1] + alt).upper()
+        # DEL
+        elif alt == "-":
+            return f[str(chr)][int(start) - 2].upper()
+        # SNV
         else:
             return alt
 
