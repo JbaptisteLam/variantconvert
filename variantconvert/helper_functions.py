@@ -78,7 +78,7 @@ class HelperFunctions:
     def get_alt_from_tsv(self, chr, start, ref, alt):
         f = get_genome(self.config["GENOME"]["path"])
         # INS
-        if len(alt) > 1:
+        if len(alt) > 1 or ref == "-":
             return (f[str(chr)][int(start) - 1] + alt).upper()
         # DEL
         elif alt == "-":
